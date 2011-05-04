@@ -8,11 +8,35 @@
 <body>
   <h1>Bin Packing Algorithm</h1>
 
-  <div id="canvas">
-  </div>
-
   <div id="unsupported">
     Sorry, this example cannot be run because your browser does not support <span class='reason'></span>
+  </div>
+
+  <div id="settings">
+
+    <div><label for='blocks'>Blocks:</label></div>
+    <textarea id='blocks' rows=20></textarea>
+
+    <div>
+      <label for='sort'>Sort By:</label>
+      <select id='sort'>
+        <option></option>
+        <option>width</option>
+        <option>height</option>
+        <option>area</option>
+        <option>random</option>
+      </select>
+      <button id="go">Run!</button>
+    </div>
+
+    <div id='errors'>
+    </div>
+
+  </div>
+
+  <div id="packing">
+    <canvas id='canvas'>
+    </canvas>
   </div>
 
   <script src='modernizr-1.7.min.js'></script>

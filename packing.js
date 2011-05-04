@@ -1,5 +1,8 @@
 Packing = {
 
+  defaultBlocks: [
+  ],
+
   init: function() {
     if (Packing.supported()) {
       // do something useful
