@@ -8,10 +8,6 @@
 <body>
   <h1>Bin Packing Algorithm</h1>
 
-  <div id="unsupported">
-    Sorry, this example cannot be run because your browser does not support <span class='reason'></span>
-  </div>
-
   <div id="settings">
 
     <div><label for='blocks'>Blocks: <span class='example'><b>W</b>x<b>H</b>[x<b>N</b>]</span></label></div>
@@ -36,11 +32,13 @@
 
   <div id="packing">
     <canvas id='canvas' width='500' height='500'>
+      <div id="unsupported">
+        Sorry, this example cannot be run because your browser does not support the &lt;canvas&gt; element
+      </div>
     </canvas>
   </div>
 
-  <script src='modernizr-1.7.min.js'></script>
-  <script src='jquery-1.6.min.js'></script>
+  <script src='jquery.js'></script>
   <script src='packing.js'></script>
 
 </body>

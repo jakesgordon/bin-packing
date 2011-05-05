@@ -1,48 +1,33 @@
 Packing = {
 
-  defaultBlocks: [
-    {width: 40, height: 20, num: 5},
+  //---------------------------------------------------------------------------
+
+  colors: [ "red", "yellow", "black", "blue", "pink", "orange", "green" ],
+
+  blocks: [
+    {width: 35, height: 30, num: 5},
     {width: 20, height: 40, num: 5},
     {width: 16, height: 16, num: 5}
   ],
 
-  colors: [
-    "red",
-    "yellow",
-    "black",
-    "blue",
-    "pink",
-    "orange",
-    "green"
-  ],
-
-  fields: {
-  },
+  //---------------------------------------------------------------------------
 
   init: function() {
-    if (Packing.supported()) {
-      Packing.fields.go = $('#go');
-      Packing.fields.blocks = $('#blocks');
-      Packing.fields.canvas = $('#canvas')[0];
-      Packing.fields.draw   = Packing.fields.canvas.getContext("2d");
-      Packing.fields.go.click(Packing.run);
 
-      Packing.saveBlocks(Packing.defaultBlocks);
-    }
+    Packing.el = {
+      blocks: $('#blocks'),
+      canvas: $('#canvas')[0]
+    };
+
+    if (!Packing.el.canvas.getContext) // no support for canvas
+      return false;
+
+    Packing.el.draw = Packing.el.canvas.getContext("2d");
+    Packing.saveBlocks(Packing.blocks);
+    $('#go').click(Packing.run);
   },
 
-  supported: function() {
-    if (!Modernizr.canvas)
-      return Packing.showUnsupported("the <canvas> element")
-    return true;
-  },
-
-  showUnsupported: function(feature) {
-    var label = $('#unsupported');
-    label.find('.reason').text(feature);
-    label.show();
-    return false;
-  },
+  //---------------------------------------------------------------------------
 
   run: function() {
     var i, n, len, block, blocks = Packing.loadBlocks();
@@ -56,22 +41,26 @@ Packing = {
     }
   },
 
+  //---------------------------------------------------------------------------
+
   clearCanvas: function() {
-    Packing.fields.draw.clearRect(0, 0, Packing.fields.canvas.width, Packing.fields.canvas.height);
+    Packing.el.draw.clearRect(0, 0, Packing.el.canvas.width, Packing.el.canvas.height);
   },
 
   drawBlock: function(block, x, y, color) {
-    Packing.fields.draw.fillStyle = color;
-    Packing.fields.draw.strokeStyle = "none";
-    Packing.fields.draw.fillRect(x, y, block.width, block.height);
+    Packing.el.draw.fillStyle = color;
+    Packing.el.draw.strokeStyle = "none";
+    Packing.el.draw.fillRect(x, y, block.width, block.height);
   },
 
   color: function(n) {
     return Packing.colors[n % Packing.colors.length];
   },
 
+  //---------------------------------------------------------------------------
+
   loadBlocks: function() {
-    var n, len, block, blocks = Packing.fields.blocks.val().split("\n"), result = [];
+    var n, len, block, blocks = Packing.el.blocks.val().split("\n"), result = [];
     for(n = 0, len = blocks.length ; n < len ; n++) {
       block = blocks[n].split("x");
       if (block.length >= 2) {
@@ -87,8 +76,10 @@ Packing = {
       block = blocks[n];
       str = str + block.width + "x" + block.height + (block.num > 1 ? "x" + block.num : "") + "\n";
     }
-    Packing.fields.blocks.val(str);
+    Packing.el.blocks.val(str);
   }
+
+  //---------------------------------------------------------------------------
 
 }
 

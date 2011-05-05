@@ -1,4 +1,4 @@
-#unsupported { display: none; border: 1px solid red; background-color: #FFFFAD; padding: 1em; margin: 1em; }
+#unsupported { border: 1px solid red; background-color: #FFFFAD; padding: 1em; margin: 1em; }
 
 textarea { resize: none; }
 
