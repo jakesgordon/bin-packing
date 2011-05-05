@@ -1,20 +1,41 @@
-Packer = function(width, height) {
-  this.width  = width;
-  this.height = height;
-  this.x = 0;
-  this.y = 0;
-};
-
+Packer = function(width, height) { this.init(width, height); };
 Packer.prototype = {
-  place: function(width, height) {
-    result = {x: this.x, y: this.y };
-    this.x = this.x + 50;
-    if (this.x >= this.width/2) {
-      this.y = this.y + 50;
-      this.x = 0;
+
+  init: function(width, height) {
+    this.root = {
+      x: 0,
+      y: 0,
+      w: width,
+      h: height
     }
-    return result;
+  },
+
+  place: function(width, height) {
+    var node = this.findNode(this.root, width, height);
+    if (node) {
+      this.splitNode(node, width, height);
+      return { x: node.x, y: node.y };
+    }
+    return false;
+  },
+
+  findNode: function(root, width, height) {
+    if (root.right && (result = this.findNode(root.right, width, height)))
+      return result;
+    else if (root.left && (result = this.findNode(root.left, width, height)))
+      return result;
+    else if (!root.done && (width < root.w) && (height < root.h))
+      return root;
+    else
+      return null;
+  },
+
+  splitNode: function(node, width, height) {
+    node.done = true;
+    node.left  = { x: node.x,         y: node.y + height, w: width,          h: node.h - height };
+    node.right = { x: node.x + width, y: node.y,          w: node.w - width, h: node.h          };
   }
+
 }
 
 Packing = {
@@ -25,9 +46,14 @@ Packing = {
   color:  function(n) { return Packing.colors[n % Packing.colors.length]; },
 
   blocks: [
+    {width: 50, height: 50},
+    {width: 50, height: 20},
+    {width: 20, height: 50}
+/*
     {width: 35, height: 30, num: 10},
     {width: 20, height: 40, num: 10},
     {width: 16, height: 16, num: 10}
+*/
   ],
 
   //---------------------------------------------------------------------------
@@ -50,16 +76,28 @@ Packing = {
   //---------------------------------------------------------------------------
 
   run: function() {
-    var i, n, len, pos, block, blocks = Packing.loadBlocks(), packer = new Packer(Packing.el.canvas.width, Packing.el.canvas.height);
+    var i, n, len, pos, all, block, blocks = Packing.loadBlocks(), packer = new Packer(Packing.el.canvas.width, Packing.el.canvas.height);
     Packing.saveBlocks(blocks);
     Packing.canvas.clear();
-    for (n = 0, len = blocks.length; n < len; n++) {
+ 
+    all = []
+    for (n = 0; n < blocks.length; n++) {
       block = blocks[n];
-      for (i = 0 ; i < block.num ; i++) {
-        pos = packer.place(block.width, block.height); 
-        Packing.canvas.rect(pos.x, pos.y, block.width, block.height, Packing.color(i));  
+      for (i = 0; i < block.num; i++) {
+        all.push({width: block.width, height: block.height});
       }
     }
+
+    // TODO: sorting
+
+    for (n = 0; n < all.length; n++) {
+      block = all[n];
+      pos = packer.place(block.width, block.height); 
+      if (pos)
+        Packing.canvas.rect(pos.x, pos.y, block.width, block.height, Packing.color(n));
+    }
+
+    Packing.canvas.boundary(packer.root);
   },
 
   //---------------------------------------------------------------------------
@@ -72,10 +110,18 @@ Packing = {
 
     rect:  function(x, y, width, height, color) {
       Packing.el.draw.fillStyle = color;
-      Packing.el.draw.strokeRect(x, y, width, height);
       Packing.el.draw.fillRect(x, y, width, height);
     },
     
+    boundary: function(node) {
+      if (node) {
+        Packing.el.draw.lineWidth = 1;
+        Packing.el.draw.strokeStyle = '#EEEEE';
+        Packing.el.draw.strokeRect(node.x - 0.5, node.y - 0.5, node.w, node.h);
+        Packing.canvas.boundary(node.left);
+        Packing.canvas.boundary(node.right);
+      }
+    }
   },
 
   //---------------------------------------------------------------------------
