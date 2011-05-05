@@ -1,13 +1,33 @@
+Packer = function(width, height) {
+  this.width  = width;
+  this.height = height;
+  this.x = 0;
+  this.y = 0;
+};
+
+Packer.prototype = {
+  place: function(width, height) {
+    result = {x: this.x, y: this.y };
+    this.x = this.x + 50;
+    if (this.x >= this.width/2) {
+      this.y = this.y + 50;
+      this.x = 0;
+    }
+    return result;
+  }
+}
+
 Packing = {
 
   //---------------------------------------------------------------------------
 
-  colors: [ "red", "yellow", "black", "blue", "pink", "orange", "green" ],
+  colors: [ "#10F090", "#1090F0", "#90F010", "#9010F0", "#F01090", "#F09010" ],
+  color:  function(n) { return Packing.colors[n % Packing.colors.length]; },
 
   blocks: [
-    {width: 35, height: 30, num: 5},
-    {width: 20, height: 40, num: 5},
-    {width: 16, height: 16, num: 5}
+    {width: 35, height: 30, num: 10},
+    {width: 20, height: 40, num: 10},
+    {width: 16, height: 16, num: 10}
   ],
 
   //---------------------------------------------------------------------------
@@ -30,31 +50,32 @@ Packing = {
   //---------------------------------------------------------------------------
 
   run: function() {
-    var i, n, len, block, blocks = Packing.loadBlocks();
+    var i, n, len, pos, block, blocks = Packing.loadBlocks(), packer = new Packer(Packing.el.canvas.width, Packing.el.canvas.height);
     Packing.saveBlocks(blocks);
-    Packing.clearCanvas();
+    Packing.canvas.clear();
     for (n = 0, len = blocks.length; n < len; n++) {
       block = blocks[n];
       for (i = 0 ; i < block.num ; i++) {
-        Packing.drawBlock(block, i*50, n*50, Packing.color(i));  
+        pos = packer.place(block.width, block.height); 
+        Packing.canvas.rect(pos.x, pos.y, block.width, block.height, Packing.color(i));  
       }
     }
   },
 
   //---------------------------------------------------------------------------
 
-  clearCanvas: function() {
-    Packing.el.draw.clearRect(0, 0, Packing.el.canvas.width, Packing.el.canvas.height);
-  },
+  canvas: {
 
-  drawBlock: function(block, x, y, color) {
-    Packing.el.draw.fillStyle = color;
-    Packing.el.draw.strokeStyle = "none";
-    Packing.el.draw.fillRect(x, y, block.width, block.height);
-  },
+    clear: function() {
+      Packing.el.draw.clearRect(0, 0, Packing.el.canvas.width, Packing.el.canvas.height);
+    },
 
-  color: function(n) {
-    return Packing.colors[n % Packing.colors.length];
+    rect:  function(x, y, width, height, color) {
+      Packing.el.draw.fillStyle = color;
+      Packing.el.draw.strokeRect(x, y, width, height);
+      Packing.el.draw.fillRect(x, y, width, height);
+    },
+    
   },
 
   //---------------------------------------------------------------------------

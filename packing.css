@@ -6,4 +6,4 @@ textarea { resize: none; }
 #settings .example { color: #999; font-style: italic; float: right; margin-right: 1em; }
 #packing           { margin-left: 15em; }
 #errors            { display: none; }
-#canvas            { border: 1px solid #1090F0; }
+#canvas            { border: 1px solid #1090F0; background-color: #FBFBFB; }
