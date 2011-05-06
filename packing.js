@@ -3,8 +3,6 @@
   TODO
   ====
    * grow to fit
-   * toggle colors on/off
-   * re-run on value change (and remove run button) 
    * display whitespace ratio
    * animation render 1 by 1
 
@@ -63,6 +61,7 @@ Packing = {
       blocks: $('#blocks'),
       canvas: $('#canvas')[0],
       sort:   $('#sort'),
+      fill:   $('#fill'),
       go:     $('#go'),
       nofit:  $('#nofit')
     };
@@ -74,6 +73,7 @@ Packing = {
     Packing.el.blocks.val(Packing.blocks.save(Packing.blocks.default));
     Packing.el.blocks.change(Packing.run);
     Packing.el.sort.change(Packing.run);
+    Packing.el.fill.change(Packing.run);
     Packing.el.go.click(Packing.run);
     Packing.run();
   },
@@ -99,10 +99,14 @@ Packing = {
     Packing.canvas.clear();
     for (n = 0 ; n < all.length ; n++) {
       block = all[n];
-      if (block.fit)
-        Packing.canvas.rect(block.fit.x, block.fit.y, block.w, block.h, Packing.color(n));
-      else
+      if (block.fit) {
+        if (Packing.el.fill.is(':checked')) {
+          Packing.canvas.rect(block.fit.x, block.fit.y, block.w, block.h, Packing.color(n));
+        }
+      }
+      else {
         nofit.push(block)
+      }
     }
     Packing.canvas.boundary(packer.root);
     Packing.showNoFit(nofit);
