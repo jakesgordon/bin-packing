@@ -1,39 +1,32 @@
-Packer = function(width, height) { this.init(width, height); };
+Packer = function(w, h) { this.init(w, h); };
 Packer.prototype = {
 
-  init: function(width, height) {
-    this.root = {
-      x: 0,
-      y: 0,
-      w: width,
-      h: height
-    }
+  init: function(w, h) {
+    this.root = { x: 0, y: 0, w: w, h: h }
   },
 
-  place: function(width, height) {
-    var node = this.findNode(this.root, width, height);
+  place: function(w, h) {
+    var node = this.findNode(this.root, w, h);
     if (node) {
-      this.splitNode(node, width, height);
+      this.splitNode(node, w, h);
       return { x: node.x, y: node.y };
     }
     return false;
   },
 
-  findNode: function(root, width, height) {
-    if (root.right && (result = this.findNode(root.right, width, height)))
-      return result;
-    else if (root.left && (result = this.findNode(root.left, width, height)))
-      return result;
-    else if (!root.done && (width <= root.w) && (height <= root.h))
+  findNode: function(root, w, h) {
+    if (root.used)
+      return this.findNode(root.right, w, h) || this.findNode(root.left, w, h);
+    else if ((w <= root.w) && (h <= root.h))
       return root;
     else
       return null;
   },
 
-  splitNode: function(node, width, height) {
-    node.done = true;
-    node.left  = { x: node.x,         y: node.y + height, w: node.w,         h: node.h - height };
-    node.right = { x: node.x + width, y: node.y,          w: node.w - width, h: height          };
+  splitNode: function(node, w, h) {
+    node.used = true;
+    node.left  = { x: node.x,     y: node.y + h, w: node.w,     h: node.h - h };
+    node.right = { x: node.x + w, y: node.y,     w: node.w - w, h: h          };
   }
 
 }
@@ -46,12 +39,13 @@ Packing = {
   color:  function(n) { return Packing.colors[n % Packing.colors.length]; },
 
   blocks: [
-    {width: 100, height: 100, num:   3},
-    {width:  60, height: 60,  num:  10},
-    {width:  50, height: 20,  num:  20},
-    {width:  20, height: 50,  num:  20},
-    {width:  10, height: 10,  num: 100},
-    {width:   5, height:  5,  num: 100}
+    {w: 100, h: 100, num:   3},
+    {w:  60, h:  60, num:  10},
+    {w:  50, h:  20, num:  20},
+    {w:  20, h:  50, num:  20},
+    {w: 250, h: 250, num:   1},
+    {w:  10, h:  10, num: 100},
+    {w:   5, h:   5, num: 500}
   ],
 
   //---------------------------------------------------------------------------
@@ -60,7 +54,8 @@ Packing = {
 
     Packing.el = {
       blocks: $('#blocks'),
-      canvas: $('#canvas')[0]
+      canvas: $('#canvas')[0],
+      sort:   $('#sort')
     };
 
     if (!Packing.el.canvas.getContext) // no support for canvas
@@ -76,10 +71,10 @@ Packing = {
 
   sort: {
     none   : function (a,b) { return 0; },
-    width  : function (a,b) { return b.width - a.width },
-    height : function (a,b) { return b.height - a.height },
-    area   : function (a,b) { return b.width*b.height - a.width*a.height },
-    random : function (a,b) { return Math.random(); }
+    width  : function (a,b) { return b.w - a.w },
+    height : function (a,b) { return b.h - a.h },
+    area   : function (a,b) { return (b.w * b.h) - (a.w * a.h) },
+    random : function (a,b) { return Math.random() - 0.5; }
   },
 
   run: function() {
@@ -92,17 +87,19 @@ Packing = {
     for (n = 0; n < blocks.length; n++) {
       block = blocks[n];
       for (i = 0; i < block.num; i++) {
-        all.push({width: block.width, height: block.height});
+        all.push({w: block.w, h: block.h});
       }
     }
 
-    all.sort(Packing.sort.height);
+    var sort = Packing.el.sort.val();
+    if (sort != 'none')
+      all.sort(Packing.sort[sort]);
 
     for (n = 0; n < all.length; n++) {
       block = all[n];
-      pos = packer.place(block.width, block.height); 
+      pos = packer.place(block.w, block.h); 
       if (pos)
-        Packing.canvas.rect(pos.x, pos.y, block.width, block.height, Packing.color(n));
+        Packing.canvas.rect(pos.x, pos.y, block.w, block.h, Packing.color(n));
     }
 
     Packing.canvas.boundary(packer.root);
@@ -116,9 +113,9 @@ Packing = {
       Packing.el.draw.clearRect(0, 0, Packing.el.canvas.width, Packing.el.canvas.height);
     },
 
-    rect:  function(x, y, width, height, color) {
+    rect:  function(x, y, w, h, color) {
       Packing.el.draw.fillStyle = color;
-      Packing.el.draw.fillRect(x, y, width, height);
+      Packing.el.draw.fillRect(x, y, w, h);
     },
     
     boundary: function(node) {
@@ -139,7 +136,7 @@ Packing = {
     for(n = 0, len = blocks.length ; n < len ; n++) {
       block = blocks[n].split("x");
       if (block.length >= 2) {
-        result.push({width: parseInt(block[0]), height: parseInt(block[1]), num: (block.length == 2 ? 1 : parseInt(block[2])) });
+        result.push({w: parseInt(block[0]), h: parseInt(block[1]), num: (block.length == 2 ? 1 : parseInt(block[2])) });
       } 
     }
     return result;
@@ -149,7 +146,7 @@ Packing = {
     var n, len, block, str = "";
     for(n = 0, len = blocks.length ; n < len ; n++) {
       block = blocks[n];
-      str = str + block.width + "x" + block.height + (block.num > 1 ? "x" + block.num : "") + "\n";
+      str = str + block.w + "x" + block.h + (block.num > 1 ? "x" + block.num : "") + "\n";
     }
     Packing.el.blocks.val(str);
   }

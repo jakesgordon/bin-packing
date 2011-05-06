@@ -11,22 +11,26 @@
   <div id="settings">
 
     <div><label for='blocks'>Blocks: <span class='example'><b>W</b>x<b>H</b>[x<b>N</b>]</span></label></div>
-    <textarea id='blocks' rows=20></textarea>
+    <textarea id='blocks' rows=10></textarea>
 
     <div>
       <label for='sort'>Sort By:</label>
       <select id='sort'>
-        <option></option>
+        <option>none</option>
         <option>width</option>
-        <option>height</option>
+        <option selected>height</option>
         <option>area</option>
         <option>random</option>
       </select>
       <button id="go">Run!</button>
     </div>
 
-    <div id='errors'>
-    </div>
+    <ul id="todo">
+      <li>list blocks that don't fit</li>
+      <li>dynamic initial canvas size</li>
+      <li>cleanup load/save/expand</li>
+      <li>display whitespace ratio</li>
+    </ul>
 
   </div>
 
