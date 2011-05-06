@@ -57,7 +57,8 @@ Packing = {
     Packing.el = {
       blocks: $('#blocks'),
       canvas: $('#canvas')[0],
-      sort:   $('#sort')
+      sort:   $('#sort'),
+      unfit:  $('#unfit')
     };
 
     if (!Packing.el.canvas.getContext) // no support for canvas
@@ -102,14 +103,29 @@ Packing = {
     if (sort != 'none')
       all.sort(Packing.sort[sort]);
 
+    var unfit = [];
     for (n = 0; n < all.length; n++) {
       block = all[n];
       pos = packer.place(block.w, block.h); 
-      if (pos)
+      if (pos) {
         Packing.canvas.rect(pos.x, pos.y, block.w, block.h, Packing.color(n));
+      }
+      else {
+        unfit.push(block);
+      }
     }
 
     Packing.canvas.boundary(packer.root);
+
+    if (unfit.length > 0) {
+      for(n = 0 ; n < unfit.length ; n++)
+        unfit[n] = "" + unfit[n].w + "x" + unfit[n].h;
+      Packing.el.unfit.html("Did not fit (" + unfit.length + ") :<br>" + unfit.join(", ")).show();
+    }
+    else {
+      Packing.el.unfit.hide();
+    }
+
   },
 
   //---------------------------------------------------------------------------
