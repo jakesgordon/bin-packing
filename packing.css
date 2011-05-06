@@ -5,7 +5,5 @@ textarea { resize: none; }
 #settings          {       width: 12em; padding: 1em; display: inline-block; float: left; border: 1px solid #999; background-color: #EEE; }
 #settings .example { color: #999; font-style: italic; float: right; margin-right: 1em; }
 #packing           { margin-left: 15em; }
-#unfit             { display: none; border: 1px solid red; margin-top: 1em; padding: 1em; }
-#todo              { padding-left: 1em; color: #666; font-style: italic; }
-#todo li           { white-space: nowrap; }
-#canvas            { border: 1px solid #1090F0; background-color: #FBFBFB; }
+#nofit             { display: none; border: 1px solid red; margin-top: 1em; padding: 1em; }
+#canvas            { background-color: #FBFBFB; }
