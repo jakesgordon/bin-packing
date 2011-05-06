@@ -44,6 +44,8 @@ Packing = {
     {w:  50, h:  20, num:  20},
     {w:  20, h:  50, num:  20},
     {w: 250, h: 250, num:   1},
+    {w: 250, h: 100, num:   1},
+    {w: 100, h: 250, num:   1},
     {w:  10, h:  10, num: 100},
     {w:   5, h:   5, num: 500}
   ],
@@ -70,11 +72,16 @@ Packing = {
   //---------------------------------------------------------------------------
 
   sort: {
-    none   : function (a,b) { return 0; },
-    width  : function (a,b) { return b.w - a.w },
-    height : function (a,b) { return b.h - a.h },
-    area   : function (a,b) { return (b.w * b.h) - (a.w * a.h) },
-    random : function (a,b) { return Math.random() - 0.5; }
+    none    : function (a,b) { return 0; },
+    random  : function (a,b) { return Math.random() - 0.5; },
+    w       : function (a,b) { return b.w - a.w; },
+    h       : function (a,b) { return b.h - a.h; },
+    area    : function (a,b) { return (b.w * b.h) - (a.w * a.h) },
+    max     : function (a,b) { return Math.max(b.w, b.h) - Math.max(a.w, a.h); },
+    min     : function (a,b) { return Math.min(b.w, b.h) - Math.min(a.w, a.h); },
+    width   : function (a,b) { var primary = Packing.sort.w(a,b);   return (primary != 0) ? primary : Packing.sort.h(a,b);   },
+    height  : function (a,b) { var primary = Packing.sort.h(a,b);   return (primary != 0) ? primary : Packing.sort.w(a,b);   },
+    maxside : function (a,b) { var primary = Packing.sort.max(a,b); return (primary != 0) ? primary : Packing.sort.min(a,b); }
   },
 
   run: function() {
