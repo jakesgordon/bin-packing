@@ -6,6 +6,10 @@
    * display whitespace ratio
    * animation render 1 by 1
 
+  OPTIMIZATIONS
+  =============
+   * mark branches as "full" to avoid walking them
+   * dont bother with nodes that are less than some threshold w/h (2? 5?)
 
 **************************************************/
 
@@ -83,7 +87,7 @@ Packing = {
   run: function() {
 
     var i, n, len, pos, all, block, nofit = [];
-    var packer = new Packer(Packing.el.canvas.width-1, Packing.el.canvas.height-1);
+    var packer = new Packer(500, 500);
     var blocks = Packing.blocks.load(Packing.el.blocks.val());
     var all    = blocks.expanded;
 
@@ -96,7 +100,7 @@ Packing = {
     packer.fit(all);
 
     // draw
-    Packing.canvas.clear();
+    Packing.canvas.reset(packer.root.w, packer.root.h);
     for (n = 0 ; n < all.length ; n++) {
       block = all[n];
       if (block.fit) {
@@ -142,7 +146,9 @@ Packing = {
 
   canvas: {
 
-    clear: function() {
+    reset: function(width, height) {
+      Packing.el.canvas.width  = width  + 1; // add 1 because we draw boundaries offset by 0.5 in order to pixel align and get crisp boundaries
+      Packing.el.canvas.height = height + 1; // (ditto)
       Packing.el.draw.clearRect(0, 0, Packing.el.canvas.width, Packing.el.canvas.height);
     },
 
