@@ -2,7 +2,6 @@
 
   TODO
   ====
-   * tall and wide example breaks with maxside (because they all sort evenly)
    * 1 by 1 animated step render
 
   OPTIMIZATIONS
@@ -223,16 +222,28 @@ Packing = {
   //---------------------------------------------------------------------------
 
   sort: {
-    none    : function (a,b) { return 0; },
+
     random  : function (a,b) { return Math.random() - 0.5; },
     w       : function (a,b) { return b.w - a.w; },
     h       : function (a,b) { return b.h - a.h; },
-    area    : function (a,b) { return b.area - a.area; },
+    a       : function (a,b) { return b.area - a.area; },
     max     : function (a,b) { return Math.max(b.w, b.h) - Math.max(a.w, a.h); },
     min     : function (a,b) { return Math.min(b.w, b.h) - Math.min(a.w, a.h); },
-    width   : function (a,b) { var primary = Packing.sort.w(a,b);   return (primary != 0) ? primary : Packing.sort.h(a,b);   },
-    height  : function (a,b) { var primary = Packing.sort.h(a,b);   return (primary != 0) ? primary : Packing.sort.w(a,b);   },
-    maxside : function (a,b) { var primary = Packing.sort.max(a,b); return (primary != 0) ? primary : Packing.sort.min(a,b); },
+
+    height  : function (a,b) { return Packing.sort.msort(a, b, ['h', 'w']);               },
+    width   : function (a,b) { return Packing.sort.msort(a, b, ['w', 'h']);               },
+    area    : function (a,b) { return Packing.sort.msort(a, b, ['a', 'h', 'w']);          },
+    maxside : function (a,b) { return Packing.sort.msort(a, b, ['max', 'min', 'h', 'w']); },
+
+    msort: function(a, b, criteria) { /* sort by multiple criteria */
+      var diff, n;
+      for (n = 0 ; n < criteria.length ; n++) {
+        diff = Packing.sort[criteria[n]](a,b);
+        if (diff != 0)
+          return diff;  
+      }
+      return 0;
+    },
 
     now: function(blocks) {
       var sort = Packing.el.sort.val();
