@@ -142,8 +142,19 @@ Packing = {
 
   //---------------------------------------------------------------------------
 
-  colors: [ "#10F090", "#1090F0", "#90F010", "#9010F0", "#F01090", "#F09010" ],
-  color:  function(n) { return Packing.colors[n % Packing.colors.length]; },
+  colors: {
+    pastel:         [ "#FFF7A5", "#FFA5E0", "#A5B3FF", "#BFFFA5", "#FFCBA5" ],
+    basic:          [ "silver", "gray", "red", "maroon", "yellow", "olive", "lime", "green", "aqua", "teal", "blue", "navy", "fuchsia", "purple" ],
+    gray:           [ "#111", "#222", "#333", "#444", "#555", "#666", "#777", "#888", "#999", "#AAA", "#BBB", "#CCC", "#DDD", "#EEE" ],
+    vintage:        [ "#EFD279", "#95CBE9", "#024769", "#AFD775", "#2C5700", "#DE9D7F", "#7F9DDE", "#00572C", "#75D7AF", "#694702", "#E9CB95", "#79D2EF" ],
+    solarized:      [ "#b58900", "#cb4b16", "#dc322f", "#d33682", "#6c71c4", "#268bd2", "#2aa198", "#859900" ],
+    none:           [ "transparent" ]
+  },
+
+  color: function(n) {
+    var cols = Packing.colors[Packing.el.color.val()];
+    return cols[n % cols.length];
+  },
 
   //---------------------------------------------------------------------------
 
@@ -155,8 +166,7 @@ Packing = {
       canvas:   $('#canvas')[0],
       size:     $('#size'),
       sort:     $('#sort'),
-      fill:     $('#fill'),
-      go:       $('#go'),
+      color:    $('#color'),
       ratio:    $('#ratio'),
       nofit:    $('#nofit')
     };
@@ -169,8 +179,7 @@ Packing = {
     Packing.el.blocks.change(Packing.run);
     Packing.el.size.change(Packing.run);
     Packing.el.sort.change(Packing.run);
-    Packing.el.fill.change(Packing.run);
-    Packing.el.go.click(Packing.run);
+    Packing.el.color.change(Packing.run);
     Packing.el.examples.change(Packing.blocks.examples.change);
     Packing.run();
   },
@@ -273,12 +282,10 @@ Packing = {
 
     blocks: function(blocks) {
       var n, block;
-      if (Packing.el.fill.is(':checked')) {
-        for (n = 0 ; n < blocks.length ; n++) {
-          block = blocks[n];
-          if (block.fit)
-            Packing.canvas.rect(block.fit.x, block.fit.y, block.w, block.h, Packing.color(n));
-        }
+      for (n = 0 ; n < blocks.length ; n++) {
+        block = blocks[n];
+        if (block.fit)
+          Packing.canvas.rect(block.fit.x, block.fit.y, block.w, block.h, Packing.color(n));
       }
     },
     
