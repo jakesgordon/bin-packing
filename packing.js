@@ -2,8 +2,7 @@
 
   TODO
   ====
-   * 3-way tree to grow more robustly ?
-   * animation render 1 by 1
+   * 1 by 1 animated step render
 
   OPTIMIZATIONS
   =============
@@ -55,18 +54,19 @@ GrowingPacker = function(blocks, options) {
 GrowingPacker.prototype = {
 
   fit: function(blocks, options) {
-    var n, node, block, len = blocks.length, maxw = maxh = 0;
-    for(n = 0 ; n < len ; n++) {
-      maxw = Math.max(maxw, blocks[n].w);
-      maxh = Math.max(maxh, blocks[n].h);
+    var n, node, block, len = blocks.length;
+    if (blocks.length > 0) {
+      this.root = { x: 0, y: 0, w: blocks[0].w, h: blocks[0].h };
+      for (n = 0; n < len ; n++) {
+        block = blocks[n];
+        if (node = this.findNode(this.root, block.w, block.h))
+          block.fit = this.splitNode(node, block.w, block.h);
+        else
+          block.fit = this.growNode(block.w, block.h);
+      }
     }
-    this.root = { x: 0, y: 0, w: maxw, h: maxh }; // this initial size, ensures that we can ALWAYS grow either down or right
-    for (n = 0; n < len ; n++) {
-      block = blocks[n];
-      if (node = this.findNode(this.root, block.w, block.h))
-        block.fit = this.splitNode(node, block.w, block.h);
-      else
-        block.fit = this.growNode(block.w, block.h);
+    else {
+      this.root = { x: 0, y: 0, w: 100, h: 100 };
     }
   },
 
@@ -87,18 +87,22 @@ GrowingPacker.prototype = {
   },
 
   growNode: function(w, h) {
-    if (this.root.h >= (this.root.w + w)) {
+    var canGrowDown  = (w <= this.root.w);
+    var canGrowRight = (h <= this.root.h);
+
+    var shouldGrowRight = canGrowRight && (this.root.h >= (this.root.w + w)); // attempt to keep square-ish by growing right when height is much greater than width
+    var shouldGrowDown  = canGrowDown  && (this.root.w >= (this.root.h + h)); // attempt to keep square-ish by growing down  when width  is much greater than height
+
+    if (shouldGrowRight)
       return this.growRight(w, h);
-    }
-    else if (this.root.w >= (this.root.h + h)) {
+    else if (shouldGrowDown)
       return this.growDown(w, h);
-    }
-    else {
-      if (this.root.w > this.root.h)
-        return this.growDown(w, h);
-      else
-        return this.growRight(w, h);
-    }
+    else if (canGrowRight)
+     return this.growRight(w, h);
+    else if (canGrowDown)
+      return this.growDown(w, h);
+    else
+      return null; // need to ensure sensible root starting size to avoid this happening
   },
 
   growRight: function(w, h) {
@@ -111,7 +115,10 @@ GrowingPacker.prototype = {
       down: this.root,
       right: { x: this.root.w, y: 0, w: w, h: this.root.h }
     };
-    return this.splitNode(this.findNode(this.root, w, h), w, h);
+    if (node = this.findNode(this.root, w, h))
+      return this.splitNode(node, w, h);
+    else
+      return null;
   },
 
   growDown: function(w, h) {
@@ -124,7 +131,10 @@ GrowingPacker.prototype = {
       down:  { x: 0, y: this.root.h, w: this.root.w, h: h },
       right: this.root
     };
-    return this.splitNode(this.findNode(this.root, w, h), w, h);
+    if (node = this.findNode(this.root, w, h))
+      return this.splitNode(node, w, h);
+    else
+      return null;
   }
 
 }
@@ -276,14 +286,14 @@ Packing = {
 
     default: [
       {w: 100, h: 100, num:   3},
-      {w:  60, h:  60, num:  10},
+      {w:  60, h:  60, num:   3},
       {w:  50, h:  20, num:  20},
       {w:  20, h:  50, num:  20},
       {w: 250, h: 250, num:   1},
       {w: 250, h: 100, num:   1},
       {w: 100, h: 250, num:   1},
-//      {w: 500, h:  80, num:   1},
-//      {w: 80,  h: 500, num:   1},
+      {w: 400, h:  80, num:   1},
+      {w: 80,  h: 400, num:   1},
       {w:  10, h:  10, num: 100},
       {w:   5, h:   5, num: 500}
     ],
