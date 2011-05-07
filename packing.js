@@ -14,18 +14,15 @@
 
 **************************************************/
 
-Packer = function(w, h) {
-  this.init(w, h);
+Packer = function(blocks, options) {
+  this.fit(blocks, options);
 };
 
 Packer.prototype = {
 
-  init: function(w, h) {
-    this.root = { x: 0, y: 0, w: w, h: h }
-  },
-
-  fit: function(blocks) {
+  fit: function(blocks, options) {
     var n, node, block;
+    this.root = { x: 0, y: 0, w: options.w, h: options.h };
     for (n = 0; n < blocks.length; n++) {
       block = blocks[n];
       if (node = this.findNode(this.root, block.w, block.h))
@@ -53,11 +50,13 @@ Packer.prototype = {
 
 /*****************************************************************************/
 
-GrowingPacker = function() { };
+GrowingPacker = function(blocks, options) {
+  this.fit(blocks, options);
+};
 
 GrowingPacker.prototype = {
 
-  fit: function(blocks) {
+  fit: function(blocks, options) {
     var n, node, block, len = blocks.length, maxw = maxh = 0;
     for(n = 0 ; n < len ; n++) {
       maxw = Math.max(maxw, blocks[n].w);
@@ -171,8 +170,6 @@ Packing = {
   run: function() {
 
     var i, n, len, pos, all, block, nofit = [];
-    var packer = new GrowingPacker();
-//    var packer = new Packer(500, 500);
     var blocks = Packing.blocks.load(Packing.el.blocks.val());
     var all    = blocks.expanded;
 
@@ -182,7 +179,8 @@ Packing = {
       all.sort(Packing.sort[sort]);
 
     // fit
-    packer.fit(all);
+//    var packer = new Packer(all, {w: 500, h: 500});
+    var packer = new GrowingPacker(all);
 
     // draw
     Packing.canvas.reset(packer.root.w, packer.root.h);
@@ -260,11 +258,11 @@ Packing = {
       {w:  60, h:  60, num:  10},
       {w:  50, h:  20, num:  20},
       {w:  20, h:  50, num:  20},
-      {w: 250, h: 250, num:   4},
+      {w: 250, h: 250, num:   1},
       {w: 250, h: 100, num:   1},
       {w: 100, h: 250, num:   1},
-      {w: 500, h:  80, num:   1},
-      {w: 80,  h: 500, num:   1},
+//      {w: 500, h:  80, num:   1},
+//      {w: 80,  h: 500, num:   1},
       {w:  10, h:  10, num: 100},
       {w:   5, h:   5, num: 500}
     ],
