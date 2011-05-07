@@ -1,35 +1,22 @@
-/*************************************************
+/******************************************************************************
 
-  TODO
-  ====
-   * 1 by 1 animated step render
+ This is a demo page to experiment with binary tree based
+ algorithms for packing blocks into a single 2 dimensional bin.
 
-  OPTIMIZATIONS
-  =============
-   * mark branches as "full" to avoid walking them
-   * dont bother with nodes that are less than some threshold w/h (2? 5?)
+ See individual .js files for descriptions of each algorithm:
 
-**************************************************/
+  * packer.js         - simple algorithm for a fixed width/height bin
+  * packer.growing.js - complex algorithm that grows automatically
+
+ TODO
+ ====
+  * step by step animated render to watch packing in action (and help debug)
+  * optimization - mark branches as "full" to avoid walking them
+  * optimization - dont bother with nodes that are less than some threshold w/h (2? 5?)
+
+*******************************************************************************/
 
 Demo = {
-
-  //---------------------------------------------------------------------------
-
-  colors: {
-    pastel:         [ "#FFF7A5", "#FFA5E0", "#A5B3FF", "#BFFFA5", "#FFCBA5" ],
-    basic:          [ "silver", "gray", "red", "maroon", "yellow", "olive", "lime", "green", "aqua", "teal", "blue", "navy", "fuchsia", "purple" ],
-    gray:           [ "#111", "#222", "#333", "#444", "#555", "#666", "#777", "#888", "#999", "#AAA", "#BBB", "#CCC", "#DDD", "#EEE" ],
-    vintage:        [ "#EFD279", "#95CBE9", "#024769", "#AFD775", "#2C5700", "#DE9D7F", "#7F9DDE", "#00572C", "#75D7AF", "#694702", "#E9CB95", "#79D2EF" ],
-    solarized:      [ "#b58900", "#cb4b16", "#dc322f", "#d33682", "#6c71c4", "#268bd2", "#2aa198", "#859900" ],
-    none:           [ "transparent" ]
-  },
-
-  color: function(n) {
-    var cols = Demo.colors[Demo.el.color.val()];
-    return cols[n % cols.length];
-  },
-
-  //---------------------------------------------------------------------------
 
   init: function() {
 
@@ -48,7 +35,7 @@ Demo = {
       return false;
 
     Demo.el.draw = Demo.el.canvas.getContext("2d");
-    Demo.el.blocks.val(Demo.blocks.save(Demo.blocks.examples.current()));
+    Demo.el.blocks.val(Demo.blocks.serialize(Demo.blocks.examples.current()));
     Demo.el.blocks.change(Demo.run);
     Demo.el.size.change(Demo.run);
     Demo.el.sort.change(Demo.run);
@@ -61,7 +48,7 @@ Demo = {
 
   run: function() {
 
-    var blocks = Demo.blocks.load(Demo.el.blocks.val()).expanded;
+    var blocks = Demo.blocks.deserialize(Demo.el.blocks.val());
     var packer = Demo.packer();
 
     Demo.sort.now(blocks);
@@ -252,27 +239,27 @@ Demo = {
       },
 
       change: function() {
-        Demo.el.blocks.val(Demo.blocks.save(Demo.blocks.examples.current()));
+        Demo.el.blocks.val(Demo.blocks.serialize(Demo.blocks.examples.current()));
         Demo.run();
       }
     },
 
-    load: function(val) {
+    deserialize: function(val) {
       var i, j, block, blocks = val.split("\n"), result = [];
       for(i = 0 ; i < blocks.length ; i++) {
         block = blocks[i].split("x");
         if (block.length >= 2)
           result.push({w: parseInt(block[0]), h: parseInt(block[1]), num: (block.length == 2 ? 1 : parseInt(block[2])) });
       }
-      result.expanded = [];
+      var expanded = [];
       for(i = 0 ; i < result.length ; i++) {
         for(j = 0 ; j < result[i].num ; j++)
-          result.expanded.push({w: result[i].w, h: result[i].h, area: result[i].w * result[i].h});
+          expanded.push({w: result[i].w, h: result[i].h, area: result[i].w * result[i].h});
       }
-      return result;
+      return expanded;
     },
 
-    save: function(blocks) {
+    serialize: function(blocks) {
       var i, block, str = "";
       for(i = 0; i < blocks.length ; i++) {
         block = blocks[i];
@@ -281,6 +268,22 @@ Demo = {
       return str;
     }
 
+  },
+
+  //---------------------------------------------------------------------------
+
+  colors: {
+    pastel:         [ "#FFF7A5", "#FFA5E0", "#A5B3FF", "#BFFFA5", "#FFCBA5" ],
+    basic:          [ "silver", "gray", "red", "maroon", "yellow", "olive", "lime", "green", "aqua", "teal", "blue", "navy", "fuchsia", "purple" ],
+    gray:           [ "#111", "#222", "#333", "#444", "#555", "#666", "#777", "#888", "#999", "#AAA", "#BBB", "#CCC", "#DDD", "#EEE" ],
+    vintage:        [ "#EFD279", "#95CBE9", "#024769", "#AFD775", "#2C5700", "#DE9D7F", "#7F9DDE", "#00572C", "#75D7AF", "#694702", "#E9CB95", "#79D2EF" ],
+    solarized:      [ "#b58900", "#cb4b16", "#dc322f", "#d33682", "#6c71c4", "#268bd2", "#2aa198", "#859900" ],
+    none:           [ "transparent" ]
+  },
+
+  color: function(n) {
+    var cols = Demo.colors[Demo.el.color.val()];
+    return cols[n % cols.length];
   }
 
   //---------------------------------------------------------------------------
