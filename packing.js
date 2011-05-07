@@ -4,7 +4,6 @@
   ====
    * 3-way tree to grow more robustly ?
    * provide combo box with various canvas sizes (including "AUTO GROW")
-   * display whitespace ratio
    * animation render 1 by 1
 
   OPTIMIZATIONS
@@ -150,7 +149,8 @@ Packing = {
       sort:   $('#sort'),
       fill:   $('#fill'),
       go:     $('#go'),
-      nofit:  $('#nofit')
+      nofit:  $('#nofit'),
+      ratio:  $('#ratio').find('.value')
     };
 
     if (!Packing.el.canvas.getContext) // no support for canvas
@@ -169,45 +169,32 @@ Packing = {
 
   run: function() {
 
-    var i, n, len, pos, all, block, nofit = [];
-    var blocks = Packing.blocks.load(Packing.el.blocks.val());
-    var all    = blocks.expanded;
+    var all = Packing.blocks.load(Packing.el.blocks.val()).expanded;
 
-    // sort
-    var sort = Packing.el.sort.val();
-    if (sort != 'none')
-      all.sort(Packing.sort[sort]);
+    Packing.sort.now(all);
 
-    // fit
-//    var packer = new Packer(all, {w: 500, h: 500});
-    var packer = new GrowingPacker(all);
+    var packer = new Packer(all, {w: 500, h: 500});
+//    var packer = new GrowingPacker(all);
 
-    // draw
     Packing.canvas.reset(packer.root.w, packer.root.h);
-    for (n = 0 ; n < all.length ; n++) {
-      block = all[n];
-      if (block.fit) {
-        if (Packing.el.fill.is(':checked')) {
-          Packing.canvas.rect(block.fit.x, block.fit.y, block.w, block.h, Packing.color(n));
-        }
-      }
-      else {
-        nofit.push(block)
-      }
-    }
+    Packing.canvas.blocks(all);
     Packing.canvas.boundary(packer.root);
-    Packing.showNoFit(nofit);
+    Packing.report(all, packer.root.w, packer.root.h);
   },
 
-  showNoFit: function(nofit) {
-    if (nofit.length > 0) {
-      for(n = 0 ; n < nofit.length ; n++)
-        nofit[n] = "" + nofit[n].w + "x" + nofit[n].h;
-      Packing.el.nofit.html("Did not fit (" + nofit.length + ") :<br>" + nofit.join(", ")).show();
+  //---------------------------------------------------------------------------
+
+  report: function(all, w, h) {
+    var fit = 0, nofit = [], block, n, len = all.length;
+    for (n = 0 ; n < len ; n++) {
+      block = all[n];
+      if (block.fit)
+        fit = fit + block.area;
+      else
+        nofit.push("" + block.w + "x" + block.h);
     }
-    else {
-      Packing.el.nofit.hide();
-    }
+    Packing.el.ratio.text(Math.round(100 * fit / (w * h)));
+    Packing.el.nofit.html("Did not fit (" + nofit.length + ") :<br>" + nofit.join(", ")).toggle(nofit.length > 0);
   },
 
   //---------------------------------------------------------------------------
@@ -217,12 +204,18 @@ Packing = {
     random  : function (a,b) { return Math.random() - 0.5; },
     w       : function (a,b) { return b.w - a.w; },
     h       : function (a,b) { return b.h - a.h; },
-    area    : function (a,b) { return (b.w * b.h) - (a.w * a.h) },
+    area    : function (a,b) { return b.area - a.area; },
     max     : function (a,b) { return Math.max(b.w, b.h) - Math.max(a.w, a.h); },
     min     : function (a,b) { return Math.min(b.w, b.h) - Math.min(a.w, a.h); },
     width   : function (a,b) { var primary = Packing.sort.w(a,b);   return (primary != 0) ? primary : Packing.sort.h(a,b);   },
     height  : function (a,b) { var primary = Packing.sort.h(a,b);   return (primary != 0) ? primary : Packing.sort.w(a,b);   },
-    maxside : function (a,b) { var primary = Packing.sort.max(a,b); return (primary != 0) ? primary : Packing.sort.min(a,b); }
+    maxside : function (a,b) { var primary = Packing.sort.max(a,b); return (primary != 0) ? primary : Packing.sort.min(a,b); },
+
+    now: function(all) {
+      var sort = Packing.el.sort.val();
+      if (sort != 'none')
+        all.sort(Packing.sort[sort]);
+    }
   },
 
   //---------------------------------------------------------------------------
@@ -237,12 +230,27 @@ Packing = {
 
     rect:  function(x, y, w, h, color) {
       Packing.el.draw.fillStyle = color;
-      Packing.el.draw.fillRect(x, y, w, h);
+      Packing.el.draw.fillRect(x + 0.5, y + 0.5, w, h);
+    },
+
+    stroke: function(x, y, w, h) {
+      Packing.el.draw.strokeRect(x + 0.5, y + 0.5, w, h);
+    },
+
+    blocks: function(blocks) {
+      var n, block;
+      if (Packing.el.fill.is(':checked')) {
+        for (n = 0 ; n < blocks.length ; n++) {
+          block = blocks[n];
+          if (block.fit)
+            Packing.canvas.rect(block.fit.x, block.fit.y, block.w, block.h, Packing.color(n));
+        }
+      }
     },
     
     boundary: function(node) {
       if (node) {
-        Packing.el.draw.strokeRect(node.x + 0.5, node.y + 0.5, node.w, node.h);
+        Packing.canvas.stroke(node.x, node.y, node.w, node.h);
         Packing.canvas.boundary(node.down);
         Packing.canvas.boundary(node.right);
       }
@@ -277,7 +285,7 @@ Packing = {
       result.expanded = [];
       for(i = 0 ; i < result.length ; i++) {
         for(j = 0 ; j < result[i].num ; j++)
-          result.expanded.push({w: result[i].w, h: result[i].h});
+          result.expanded.push({w: result[i].w, h: result[i].h, area: result[i].w * result[i].h});
       }
       return result;
     },
