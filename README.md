@@ -12,16 +12,16 @@ Clone this repository
 
     git clone https://github.com/jakesgordon/bin-packing
 
-View the index.html file in your favorite browser for
+View the index.html file in your favorite browser for examples of algorithm in use with lots of configurable options.
 
 Usage
 =====
 
-If you want to use GrowingPacker in your own javascript projects, you need something like this:
+If you want to use this in your own javascript projects, you need something like this:
 
     <script src='packer.growing.js'></script>
     <script>
-      var packer = new GrowingPacker();
+      var packer = new Packer(1000, 1000);   // or:  new GrowingPacker();
       var blocks = [
         { w: 100, h: 100 },
         { w: 100, h: 100 },
@@ -31,7 +31,7 @@ If you want to use GrowingPacker in your own javascript projects, you need somet
         etc
       ];
 
-      blocks.sort(function(a,b) { return (b.h < a.h); }); // sort inputs for best results (see demo.js for comprehensive sort options)
+      blocks.sort(function(a,b) { return (b.h < a.h); }); // sort inputs for best results
       packer.fit(blocks);
   
       for(var n = 0 ; n < blocks.length ; n++) {
