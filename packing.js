@@ -2,6 +2,7 @@
 
   TODO
   ====
+   * choice between grow down and grow left should be based on root ratio (force down if root.w > (root.h + h), force right if root.h > (root.w + w))
    * 3-way tree to grow more robustly ?
    * provide combo box with various canvas sizes (including "AUTO GROW")
    * display whitespace ratio
@@ -53,30 +54,23 @@ Packer.prototype = {
 
 /*****************************************************************************/
 
-GrowingPacker = function() {
-  this.init();
-};
+GrowingPacker = function() { };
 
 GrowingPacker.prototype = {
 
-  init: function() {
-    this.grow = 1;
-  },
-
   fit: function(blocks) {
-    if (blocks.length > 0) {
-      var n, node, block;
-      this.root = { x: 0, y: 0, w: blocks[0].w, h: blocks[0].h } 
-      for (n = 0; n < blocks.length; n++) {
-        block = blocks[n];
-        if (node = this.findNode(this.root, block.w, block.h))
-          block.fit = this.splitNode(node, block.w, block.h);
-        else
-          block.fit = this.growNode(block.w, block.h);
-      }
+    var n, node, block, len = blocks.length, maxw = maxh = 0;
+    for(n = 0 ; n < len ; n++) {
+      maxw = Math.max(maxw, blocks[n].w);
+      maxh = Math.max(maxh, blocks[n].h);
     }
-    else {
-      this.root = { x: 0, y: 0, w: 100, h: 100 };
+    this.root = { x: 0, y: 0, w: maxw, h: maxh }; // this initial size, ensures that we can ALWAYS grow either down or right
+    for (n = 0; n < len ; n++) {
+      block = blocks[n];
+      if (node = this.findNode(this.root, block.w, block.h))
+        block.fit = this.splitNode(node, block.w, block.h);
+      else
+        block.fit = this.growNode(block.w, block.h);
     }
   },
 
@@ -99,10 +93,19 @@ GrowingPacker.prototype = {
   growNode: function(w, h) {
     var canGrowDown  = (w <= this.root.w);
     var canGrowRight = (h <= this.root.h);
-    var growDown     = canGrowDown  && (this.grow <= 0);
-    var growRight    = canGrowRight && (this.grow  > 0);
+    var growDown     = canGrowDown  && (w >= h);
+    var growRight    = canGrowRight && (w <= h);
 
-    this.grow = this.grow * -1; // alternate between trying to grow right and trying to grow down
+    if (growDown && growRight) {
+      if (this.lastGrow == 'right') {
+        growRight = false;
+        this.lastGrow = 'down';
+      }
+      else {
+        growDown = false;
+        this.lastGrow = 'right';
+      }
+    }
 
     if (growDown) {
       this.root = {
@@ -125,9 +128,6 @@ GrowingPacker.prototype = {
         down: this.root,
         right: { x: this.root.w, y: 0, w: w, h: this.root.h }
       };
-    }
-    else {
-      // TODO: how do I grow if it doesn't fit right, or down ? I think I need a 3-2 tree instead of binary tree?
     }
 
     if (node = this.findNode(this.root, w, h))
@@ -266,7 +266,7 @@ Packing = {
       {w:  60, h:  60, num:  10},
       {w:  50, h:  20, num:  20},
       {w:  20, h:  50, num:  20},
-      {w: 250, h: 250, num:   1},
+      {w: 250, h: 250, num:   4},
       {w: 250, h: 100, num:   1},
       {w: 100, h: 250, num:   1},
 //      {w: 500, h:  80, num:   1},
