@@ -2,7 +2,6 @@
 
   TODO
   ====
-   * choice between grow down and grow left should be based on root ratio (force down if root.w > (root.h + h), force right if root.h > (root.w + w))
    * 3-way tree to grow more robustly ?
    * provide combo box with various canvas sizes (including "AUTO GROW")
    * display whitespace ratio
@@ -91,49 +90,44 @@ GrowingPacker.prototype = {
   },
 
   growNode: function(w, h) {
-    var canGrowDown  = (w <= this.root.w);
-    var canGrowRight = (h <= this.root.h);
-    var growDown     = canGrowDown  && (w >= h);
-    var growRight    = canGrowRight && (w <= h);
-
-    if (growDown && growRight) {
-      if (this.lastGrow == 'right') {
-        growRight = false;
-        this.lastGrow = 'down';
-      }
-      else {
-        growDown = false;
-        this.lastGrow = 'right';
-      }
+    if (this.root.h >= (this.root.w + w)) {
+      return this.growRight(w, h);
     }
-
-    if (growDown) {
-      this.root = {
-        used: true,
-        x: 0,
-        y: 0,
-        w: this.root.w,
-        h: this.root.h + h,
-        down:  { x: 0, y: this.root.h, w: this.root.w, h: h },
-        right: this.root
-      };
+    else if (this.root.w >= (this.root.h + h)) {
+      return this.growDown(w, h);
     }
-    else if (growRight) {
-      this.root = {
-        used: true,
-        x: 0,
-        y: 0,
-        w: this.root.w + w,
-        h: this.root.h,
-        down: this.root,
-        right: { x: this.root.w, y: 0, w: w, h: this.root.h }
-      };
+    else {
+      if (this.root.w > this.root.h)
+        return this.growDown(w, h);
+      else
+        return this.growRight(w, h);
     }
+  },
 
-    if (node = this.findNode(this.root, w, h))
-      return this.splitNode(node, w, h);
+  growRight: function(w, h) {
+    this.root = {
+      used: true,
+      x: 0,
+      y: 0,
+      w: this.root.w + w,
+      h: this.root.h,
+      down: this.root,
+      right: { x: this.root.w, y: 0, w: w, h: this.root.h }
+    };
+    return this.splitNode(this.findNode(this.root, w, h), w, h);
+  },
 
-    return null;
+  growDown: function(w, h) {
+    this.root = {
+      used: true,
+      x: 0,
+      y: 0,
+      w: this.root.w,
+      h: this.root.h + h,
+      down:  { x: 0, y: this.root.h, w: this.root.w, h: h },
+      right: this.root
+    };
+    return this.splitNode(this.findNode(this.root, w, h), w, h);
   }
 
 }
@@ -269,8 +263,8 @@ Packing = {
       {w: 250, h: 250, num:   4},
       {w: 250, h: 100, num:   1},
       {w: 100, h: 250, num:   1},
-//      {w: 500, h:  80, num:   1},
-//      {w: 80,  h: 500, num:   1},
+      {w: 500, h:  80, num:   1},
+      {w: 80,  h: 500, num:   1},
       {w:  10, h:  10, num: 100},
       {w:   5, h:   5, num: 500}
     ],
