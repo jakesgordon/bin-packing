@@ -2,7 +2,8 @@
 
   TODO
   ====
-   * grow to fit
+   * 3-way tree to grow more robustly ?
+   * provide combo box with various canvas sizes (including "AUTO GROW")
    * display whitespace ratio
    * animation render 1 by 1
 
@@ -34,7 +35,7 @@ Packer.prototype = {
 
   findNode: function(root, w, h) {
     if (root.used)
-      return this.findNode(root.right, w, h) || this.findNode(root.left, w, h);
+      return this.findNode(root.right, w, h) || this.findNode(root.down, w, h);
     else if ((w <= root.w) && (h <= root.h))
       return root;
     else
@@ -43,12 +44,96 @@ Packer.prototype = {
 
   splitNode: function(node, w, h) {
     node.used = true;
-    node.left  = { x: node.x,     y: node.y + h, w: node.w,     h: node.h - h };
+    node.down  = { x: node.x,     y: node.y + h, w: node.w,     h: node.h - h };
     node.right = { x: node.x + w, y: node.y,     w: node.w - w, h: h          };
     return node;
   }
 
 }
+
+/*****************************************************************************/
+
+GrowingPacker = function() {
+  this.init();
+};
+
+GrowingPacker.prototype = {
+
+  init: function() {
+    this.grow = 1;
+  },
+
+  fit: function(blocks) {
+    var n, node, block;
+    this.root = { x: 0, y: 0, w: blocks[0].w, h: blocks[0].h }
+    for (n = 0; n < blocks.length; n++) {
+      block = blocks[n];
+      if (node = this.findNode(this.root, block.w, block.h))
+        block.fit = this.splitNode(node, block.w, block.h);
+      else
+        block.fit = this.growNode(block.w, block.h);
+    }
+  },
+
+  findNode: function(root, w, h) {
+    if (root.used)
+      return this.findNode(root.right, w, h) || this.findNode(root.down, w, h);
+    else if ((w <= root.w) && (h <= root.h))
+      return root;
+    else
+      return null;
+  },
+
+  splitNode: function(node, w, h) {
+    node.used = true;
+    node.down  = { x: node.x,     y: node.y + h, w: node.w,     h: node.h - h };
+    node.right = { x: node.x + w, y: node.y,     w: node.w - w, h: h          };
+    return node;
+  },
+
+  growNode: function(w, h) {
+    var canGrowDown  = (w <= this.root.w);
+    var canGrowRight = (h <= this.root.h);
+    var growDown     = canGrowDown  && (this.grow <= 0);
+    var growRight    = canGrowRight && (this.grow  > 0);
+
+    this.grow = this.grow * -1; // alternate between trying to grow right and trying to grow down
+
+    if (growDown) {
+      this.root = {
+        used: true,
+        x: 0,
+        y: 0,
+        w: this.root.w,
+        h: this.root.h + h,
+        down:  { x: 0, y: this.root.h, w: this.root.w, h: h },
+        right: this.root
+      };
+    }
+    else if (growRight) {
+      this.root = {
+        used: true,
+        x: 0,
+        y: 0,
+        w: this.root.w + w,
+        h: this.root.h,
+        down: this.root,
+        right: { x: this.root.w, y: 0, w: w, h: this.root.h }
+      };
+    }
+    else {
+      // TODO: how do I grow if it doesn't fit right, or down ? I think I need a 3-2 tree instead of binary tree?
+    }
+
+    if (node = this.findNode(this.root, w, h))
+      return this.splitNode(node, w, h);
+
+    return null;
+  }
+
+}
+
+/*****************************************************************************/
 
 Packing = {
 
@@ -87,7 +172,8 @@ Packing = {
   run: function() {
 
     var i, n, len, pos, all, block, nofit = [];
-    var packer = new Packer(500, 500);
+    var packer = new GrowingPacker();
+//    var packer = new Packer(500, 500);
     var blocks = Packing.blocks.load(Packing.el.blocks.val());
     var all    = blocks.expanded;
 
@@ -160,7 +246,7 @@ Packing = {
     boundary: function(node) {
       if (node) {
         Packing.el.draw.strokeRect(node.x + 0.5, node.y + 0.5, node.w, node.h);
-        Packing.canvas.boundary(node.left);
+        Packing.canvas.boundary(node.down);
         Packing.canvas.boundary(node.right);
       }
     }
@@ -178,6 +264,8 @@ Packing = {
       {w: 250, h: 250, num:   1},
       {w: 250, h: 100, num:   1},
       {w: 100, h: 250, num:   1},
+//      {w: 500, h:  80, num:   1},
+//      {w: 80,  h: 500, num:   1},
       {w:  10, h:  10, num: 100},
       {w:   5, h:   5, num: 500}
     ],
