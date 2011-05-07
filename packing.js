@@ -11,15 +11,18 @@
 
 **************************************************/
 
-Packer = function(blocks, options) {
-  this.fit(blocks, options);
+Packer = function(w, h) {
+  this.init(w, h);
 };
 
 Packer.prototype = {
 
-  fit: function(blocks, options) {
+  init: function(w, h) {
+    this.root = { x: 0, y: 0, w: w, h: h };
+  },
+
+  fit: function(blocks) {
     var n, node, block;
-    this.root = { x: 0, y: 0, w: options.w, h: options.h };
     for (n = 0; n < blocks.length; n++) {
       block = blocks[n];
       if (node = this.findNode(this.root, block.w, block.h))
@@ -47,13 +50,11 @@ Packer.prototype = {
 
 /*****************************************************************************/
 
-GrowingPacker = function(blocks, options) {
-  this.fit(blocks, options);
-};
+GrowingPacker = function() { };
 
 GrowingPacker.prototype = {
 
-  fit: function(blocks, options) {
+  fit: function(blocks) {
     var n, node, block, len = blocks.length;
     var w = len > 0 ? blocks[0].w : 100;
     var h = len > 0 ? blocks[0].h : 100;
@@ -189,10 +190,11 @@ Packing = {
   run: function() {
 
     var blocks = Packing.blocks.load(Packing.el.blocks.val()).expanded;
+    var packer = Packing.packer();
 
     Packing.sort.now(blocks);
 
-    var packer = Packing.packer(blocks);
+    packer.fit(blocks);
 
     Packing.canvas.reset(packer.root.w, packer.root.h);
     Packing.canvas.blocks(blocks);
@@ -202,14 +204,14 @@ Packing = {
 
   //---------------------------------------------------------------------------
 
-  packer: function(blocks) {
+  packer: function() {
     var size = Packing.el.size.val();
     if (size == 'automatic') {
-      return new GrowingPacker(blocks);
+      return new GrowingPacker();
     }
     else {
       var dims = size.split("x");
-      return new Packer(blocks, {w: parseInt(dims[0]), h: parseInt(dims[1])});
+      return new Packer(parseInt(dims[0]), parseInt(dims[1]));
     }
   },
 
