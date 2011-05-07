@@ -9,14 +9,24 @@
   <h1>Bin Packing Algorithm</h1>
 
   <div id="settings">
+      
+    <div class='blocks'>
+      <label for='blocks'>Blocks: <span class='example'><b>W</b>x<b>H</b>[x<b>N</b>]</span></label>
+      <textarea id='blocks' rows=12></textarea>
+    </div>
 
-    <div><label for='blocks'>Blocks: <span class='example'><b>W</b>x<b>H</b>[x<b>N</b>]</span></label></div>
-    <textarea id='blocks' rows=10></textarea>
+    <div class='size'>
+      <label for='size'>Size: </label>
+      <select id='size'>
+        <option>256x256</option>
+        <option selected>500x500</option>
+        <option>800x600</option>
+        <option>autogrow</option>
+      </select>
+    </div>
 
-    <div><input id='fill' type='checkbox' checked='checked'> <label for='fill'>Fill?</label></div>
-
-    <div>
-      <label for='sort'>Sort By:</label>
+    <div class='sort'>
+      <label for='sort'>Sort: </label>
       <select id='sort'>
         <option>none</option>
         <option>width</option>
@@ -25,14 +35,22 @@
         <option>area</option>
         <option>random</option>
       </select>
+    </div>
+
+    <div class='fill'>
+      <label for='fill'>fill: </label>
+      <input id='fill' type='checkbox' checked='checked'>
+    </div>
+
+    <div class='go'>
       <button id="go">Run!</button>
     </div>
 
-    <div id="ratio">
-      Filled: <span class='value'>0</span>%
+    <div class="ratio">
+      Filled: <span id='ratio'>0</span>%
     </div>
 
-    <div id="nofit">
+    <div id="nofit" class="nofit">
     </div>
 
   </div>

@@ -2,9 +2,17 @@
 
 textarea { resize: none; }
 
-#settings          {       width: 12em; padding: 1em; display: inline-block; float: left; border: 1px solid #999; background-color: #EEE; }
-#settings .example { color: #999; font-style: italic; float: right; margin-right: 1em; }
-#packing           { margin-left: 15em; }
-#ratio             { border: 1px solid #999; margin-top: 1em; padding: 1em; }
-#nofit             { display: none; border: 1px solid red; margin-top: 1em; padding: 1em; }
-#canvas            { background-color: #FBFBFB; }
+#settings                  { width: 12em; padding: 1em; display: inline-block; float: left; border: 1px solid #999; background-color: #EEE; }
+#settings .blocks          { }
+#settings .blocks .example { color: #999; font-style: italic; float: right; margin-right: 1em; }
+#settings .size            { clear: both; float: right; }
+#settings .sort            { clear: both; float: right; }
+#settings .fill            { clear: both; float: right; }
+#settings .go              { clear: both; float: right; margin: 1em 0; }
+#settings .ratio           { clear: both; border: 1px solid #999; padding: 1em; }
+#settings .nofit           { display: none; border: 1px solid red; margin-top: 1em; padding: 1em; }
+
+#packing  { margin-left: 15em; }
+#canvas   { background-color: #FBFBFB; }
+
+

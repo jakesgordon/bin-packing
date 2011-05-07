@@ -3,7 +3,6 @@
   TODO
   ====
    * 3-way tree to grow more robustly ?
-   * provide combo box with various canvas sizes (including "AUTO GROW")
    * animation render 1 by 1
 
   OPTIMIZATIONS
@@ -146,11 +145,12 @@ Packing = {
     Packing.el = {
       blocks: $('#blocks'),
       canvas: $('#canvas')[0],
+      size:   $('#size'),
       sort:   $('#sort'),
       fill:   $('#fill'),
       go:     $('#go'),
-      nofit:  $('#nofit'),
-      ratio:  $('#ratio').find('.value')
+      ratio:  $('#ratio'),
+      nofit:  $('#nofit')
     };
 
     if (!Packing.el.canvas.getContext) // no support for canvas
@@ -159,6 +159,7 @@ Packing = {
     Packing.el.draw = Packing.el.canvas.getContext("2d");
     Packing.el.blocks.val(Packing.blocks.save(Packing.blocks.default));
     Packing.el.blocks.change(Packing.run);
+    Packing.el.size.change(Packing.run);
     Packing.el.sort.change(Packing.run);
     Packing.el.fill.change(Packing.run);
     Packing.el.go.click(Packing.run);
@@ -169,25 +170,37 @@ Packing = {
 
   run: function() {
 
-    var all = Packing.blocks.load(Packing.el.blocks.val()).expanded;
+    var blocks = Packing.blocks.load(Packing.el.blocks.val()).expanded;
 
-    Packing.sort.now(all);
+    Packing.sort.now(blocks);
 
-    var packer = new Packer(all, {w: 500, h: 500});
-//    var packer = new GrowingPacker(all);
+    var packer = Packing.packer(blocks);
 
     Packing.canvas.reset(packer.root.w, packer.root.h);
-    Packing.canvas.blocks(all);
+    Packing.canvas.blocks(blocks);
     Packing.canvas.boundary(packer.root);
-    Packing.report(all, packer.root.w, packer.root.h);
+    Packing.report(blocks, packer.root.w, packer.root.h);
   },
 
   //---------------------------------------------------------------------------
 
-  report: function(all, w, h) {
-    var fit = 0, nofit = [], block, n, len = all.length;
+  packer: function(blocks) {
+    var size = Packing.el.size.val();
+    if (size == 'autogrow') {
+      return new GrowingPacker(blocks);
+    }
+    else {
+      var dims = size.split("x");
+      return new Packer(blocks, {w: parseInt(dims[0]), h: parseInt(dims[1])});
+    }
+  },
+
+  //---------------------------------------------------------------------------
+
+  report: function(blocks, w, h) {
+    var fit = 0, nofit = [], block, n, len = blocks.length;
     for (n = 0 ; n < len ; n++) {
-      block = all[n];
+      block = blocks[n];
       if (block.fit)
         fit = fit + block.area;
       else
@@ -211,10 +224,10 @@ Packing = {
     height  : function (a,b) { var primary = Packing.sort.h(a,b);   return (primary != 0) ? primary : Packing.sort.w(a,b);   },
     maxside : function (a,b) { var primary = Packing.sort.max(a,b); return (primary != 0) ? primary : Packing.sort.min(a,b); },
 
-    now: function(all) {
+    now: function(blocks) {
       var sort = Packing.el.sort.val();
       if (sort != 'none')
-        all.sort(Packing.sort[sort]);
+        blocks.sort(Packing.sort[sort]);
     }
   },
 
