@@ -3,6 +3,7 @@
 textarea { resize: none; }
 
 #settings                  { width: 12em; padding: 1em; display: inline-block; float: left; border: 1px solid #999; background-color: #EEE; }
+#settings .examples        { margin-bottom: 1em; }
 #settings .blocks          { }
 #settings .blocks .example { color: #999; font-style: italic; float: right; margin-right: 1em; }
 #settings .size            { clear: both; float: right; }

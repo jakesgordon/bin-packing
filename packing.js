@@ -153,26 +153,28 @@ Packing = {
   init: function() {
 
     Packing.el = {
-      blocks: $('#blocks'),
-      canvas: $('#canvas')[0],
-      size:   $('#size'),
-      sort:   $('#sort'),
-      fill:   $('#fill'),
-      go:     $('#go'),
-      ratio:  $('#ratio'),
-      nofit:  $('#nofit')
+      examples: $('#examples'),
+      blocks:   $('#blocks'),
+      canvas:   $('#canvas')[0],
+      size:     $('#size'),
+      sort:     $('#sort'),
+      fill:     $('#fill'),
+      go:       $('#go'),
+      ratio:    $('#ratio'),
+      nofit:    $('#nofit')
     };
 
     if (!Packing.el.canvas.getContext) // no support for canvas
       return false;
 
     Packing.el.draw = Packing.el.canvas.getContext("2d");
-    Packing.el.blocks.val(Packing.blocks.save(Packing.blocks.default));
+    Packing.el.blocks.val(Packing.blocks.save(Packing.blocks.examples.current()));
     Packing.el.blocks.change(Packing.run);
     Packing.el.size.change(Packing.run);
     Packing.el.sort.change(Packing.run);
     Packing.el.fill.change(Packing.run);
     Packing.el.go.click(Packing.run);
+    Packing.el.examples.change(Packing.blocks.examples.change);
     Packing.run();
   },
 
@@ -284,19 +286,52 @@ Packing = {
 
   blocks: {
 
-    default: [
-      {w: 100, h: 100, num:   3},
-      {w:  60, h:  60, num:   3},
-      {w:  50, h:  20, num:  20},
-      {w:  20, h:  50, num:  20},
-      {w: 250, h: 250, num:   1},
-      {w: 250, h: 100, num:   1},
-      {w: 100, h: 250, num:   1},
-      {w: 400, h:  80, num:   1},
-      {w: 80,  h: 400, num:   1},
-      {w:  10, h:  10, num: 100},
-      {w:   5, h:   5, num: 500}
-    ],
+    examples: {
+
+      simple: [
+        { w: 500, h: 200, num:  1 },
+        { w: 250, h: 200, num:  1 },
+        { w: 50,  h: 50,  num: 20 }
+      ],
+
+      square: [
+        { w: 50, h: 50, num: 100 }
+      ],
+
+      power2: [
+        { w:   2, h:   2, num: 256 },
+        { w:   4, h:   4, num: 128 },
+        { w:   8, h:   8, num:  64 },
+        { w:  16, h:  16, num:  32 },
+        { w:  32, h:  32, num:  16 },
+        { w:  64, h:  64, num:   8 },
+        { w: 128, h: 128, num:   4 },
+        { w: 256, h: 256, num:   2 }
+      ],
+
+      complex: [
+        {w: 100, h: 100, num:   3},
+        {w:  60, h:  60, num:   3},
+        {w:  50, h:  20, num:  20},
+        {w:  20, h:  50, num:  20},
+        {w: 250, h: 250, num:   1},
+        {w: 250, h: 100, num:   1},
+        {w: 100, h: 250, num:   1},
+        {w: 400, h:  80, num:   1},
+        {w: 80,  h: 400, num:   1},
+        {w:  10, h:  10, num: 100},
+        {w:   5, h:   5, num: 500}
+      ],
+
+      current: function() {
+        return Packing.blocks.examples[Packing.el.examples.val()];
+      },
+
+      change: function() {
+        Packing.el.blocks.val(Packing.blocks.save(Packing.blocks.examples.current()));
+        Packing.run();
+      }
+    },
 
     load: function(val) {
       var i, j, block, blocks = val.split("\n"), result = [];
