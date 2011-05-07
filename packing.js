@@ -2,6 +2,7 @@
 
   TODO
   ====
+   * tall and wide example breaks with maxside (because they all sort evenly)
    * 1 by 1 animated step render
 
   OPTIMIZATIONS
@@ -55,18 +56,15 @@ GrowingPacker.prototype = {
 
   fit: function(blocks, options) {
     var n, node, block, len = blocks.length;
-    if (blocks.length > 0) {
-      this.root = { x: 0, y: 0, w: blocks[0].w, h: blocks[0].h };
-      for (n = 0; n < len ; n++) {
-        block = blocks[n];
-        if (node = this.findNode(this.root, block.w, block.h))
-          block.fit = this.splitNode(node, block.w, block.h);
-        else
-          block.fit = this.growNode(block.w, block.h);
-      }
-    }
-    else {
-      this.root = { x: 0, y: 0, w: 100, h: 100 };
+    var w = len > 0 ? blocks[0].w : 100;
+    var h = len > 0 ? blocks[0].h : 100;
+    this.root = { x: 0, y: 0, w: w, h: h };
+    for (n = 0; n < len ; n++) {
+      block = blocks[n];
+      if (node = this.findNode(this.root, block.w, block.h))
+        block.fit = this.splitNode(node, block.w, block.h);
+      else
+        block.fit = this.growNode(block.w, block.h);
     }
   },
 
@@ -198,7 +196,7 @@ Packing = {
 
   packer: function(blocks) {
     var size = Packing.el.size.val();
-    if (size == 'autogrow') {
+    if (size == 'automatic') {
       return new GrowingPacker(blocks);
     }
     else {
@@ -307,6 +305,40 @@ Packing = {
         { w:  64, h:  64, num:   8 },
         { w: 128, h: 128, num:   4 },
         { w: 256, h: 256, num:   2 }
+      ],
+
+      tall: [
+        { w: 50,  h: 400, num:  2 },
+        { w: 50,  h: 300, num:  5 },
+        { w: 50,  h: 200, num: 10 },
+        { w: 50,  h: 100, num: 20 },
+        { w: 50,  h:  50, num: 40 }
+      ],
+
+      wide: [
+        { w: 400, h:  50, num:  2 },
+        { w: 300, h:  50, num:  5 },
+        { w: 200, h:  50, num: 10 },
+        { w: 100, h:  50, num: 20 },
+        { w:  50, h:  50, num: 40 }
+      ],
+
+      tallwide: [ /* alternate tall then wide */
+        { w: 400, h: 100 },
+        { w: 100, h: 400 },
+        { w: 400, h: 100 },
+        { w: 100, h: 400 },
+        { w: 400, h: 100 },
+        { w: 100, h: 400 }
+      ],
+
+      oddeven: [ /* both odd and even sizes leaves little areas of whitespace */
+        { w:  50, h:  50, num: 20 },
+        { w:  47, h:  31, num: 20 },
+        { w:  23, h:  17, num: 20 },
+        { w: 109, h:  42, num: 20 },
+        { w:  42, h: 109, num: 20 },
+        { w:  17, h:  33, num: 20 },
       ],
 
       complex: [

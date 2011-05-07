@@ -1,6 +1,7 @@
 #unsupported { border: 1px solid red; background-color: #FFFFAD; padding: 1em; margin: 1em; }
 
 textarea { resize: none; }
+select   { width: 8em;   }
 
 #settings                  { width: 12em; padding: 1em; display: inline-block; float: left; border: 1px solid #999; background-color: #EEE; }
 #settings .examples        { margin-bottom: 1em; }
