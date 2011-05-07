@@ -11,135 +11,7 @@
 
 **************************************************/
 
-Packer = function(w, h) {
-  this.init(w, h);
-};
-
-Packer.prototype = {
-
-  init: function(w, h) {
-    this.root = { x: 0, y: 0, w: w, h: h };
-  },
-
-  fit: function(blocks) {
-    var n, node, block;
-    for (n = 0; n < blocks.length; n++) {
-      block = blocks[n];
-      if (node = this.findNode(this.root, block.w, block.h))
-        block.fit = this.splitNode(node, block.w, block.h);
-    }
-  },
-
-  findNode: function(root, w, h) {
-    if (root.used)
-      return this.findNode(root.right, w, h) || this.findNode(root.down, w, h);
-    else if ((w <= root.w) && (h <= root.h))
-      return root;
-    else
-      return null;
-  },
-
-  splitNode: function(node, w, h) {
-    node.used = true;
-    node.down  = { x: node.x,     y: node.y + h, w: node.w,     h: node.h - h };
-    node.right = { x: node.x + w, y: node.y,     w: node.w - w, h: h          };
-    return node;
-  }
-
-}
-
-/*****************************************************************************/
-
-GrowingPacker = function() { };
-
-GrowingPacker.prototype = {
-
-  fit: function(blocks) {
-    var n, node, block, len = blocks.length;
-    var w = len > 0 ? blocks[0].w : 100;
-    var h = len > 0 ? blocks[0].h : 100;
-    this.root = { x: 0, y: 0, w: w, h: h };
-    for (n = 0; n < len ; n++) {
-      block = blocks[n];
-      if (node = this.findNode(this.root, block.w, block.h))
-        block.fit = this.splitNode(node, block.w, block.h);
-      else
-        block.fit = this.growNode(block.w, block.h);
-    }
-  },
-
-  findNode: function(root, w, h) {
-    if (root.used)
-      return this.findNode(root.right, w, h) || this.findNode(root.down, w, h);
-    else if ((w <= root.w) && (h <= root.h))
-      return root;
-    else
-      return null;
-  },
-
-  splitNode: function(node, w, h) {
-    node.used = true;
-    node.down  = { x: node.x,     y: node.y + h, w: node.w,     h: node.h - h };
-    node.right = { x: node.x + w, y: node.y,     w: node.w - w, h: h          };
-    return node;
-  },
-
-  growNode: function(w, h) {
-    var canGrowDown  = (w <= this.root.w);
-    var canGrowRight = (h <= this.root.h);
-
-    var shouldGrowRight = canGrowRight && (this.root.h >= (this.root.w + w)); // attempt to keep square-ish by growing right when height is much greater than width
-    var shouldGrowDown  = canGrowDown  && (this.root.w >= (this.root.h + h)); // attempt to keep square-ish by growing down  when width  is much greater than height
-
-    if (shouldGrowRight)
-      return this.growRight(w, h);
-    else if (shouldGrowDown)
-      return this.growDown(w, h);
-    else if (canGrowRight)
-     return this.growRight(w, h);
-    else if (canGrowDown)
-      return this.growDown(w, h);
-    else
-      return null; // need to ensure sensible root starting size to avoid this happening
-  },
-
-  growRight: function(w, h) {
-    this.root = {
-      used: true,
-      x: 0,
-      y: 0,
-      w: this.root.w + w,
-      h: this.root.h,
-      down: this.root,
-      right: { x: this.root.w, y: 0, w: w, h: this.root.h }
-    };
-    if (node = this.findNode(this.root, w, h))
-      return this.splitNode(node, w, h);
-    else
-      return null;
-  },
-
-  growDown: function(w, h) {
-    this.root = {
-      used: true,
-      x: 0,
-      y: 0,
-      w: this.root.w,
-      h: this.root.h + h,
-      down:  { x: 0, y: this.root.h, w: this.root.w, h: h },
-      right: this.root
-    };
-    if (node = this.findNode(this.root, w, h))
-      return this.splitNode(node, w, h);
-    else
-      return null;
-  }
-
-}
-
-/*****************************************************************************/
-
-Packing = {
+Demo = {
 
   //---------------------------------------------------------------------------
 
@@ -153,7 +25,7 @@ Packing = {
   },
 
   color: function(n) {
-    var cols = Packing.colors[Packing.el.color.val()];
+    var cols = Demo.colors[Demo.el.color.val()];
     return cols[n % cols.length];
   },
 
@@ -161,7 +33,7 @@ Packing = {
 
   init: function() {
 
-    Packing.el = {
+    Demo.el = {
       examples: $('#examples'),
       blocks:   $('#blocks'),
       canvas:   $('#canvas')[0],
@@ -172,40 +44,40 @@ Packing = {
       nofit:    $('#nofit')
     };
 
-    if (!Packing.el.canvas.getContext) // no support for canvas
+    if (!Demo.el.canvas.getContext) // no support for canvas
       return false;
 
-    Packing.el.draw = Packing.el.canvas.getContext("2d");
-    Packing.el.blocks.val(Packing.blocks.save(Packing.blocks.examples.current()));
-    Packing.el.blocks.change(Packing.run);
-    Packing.el.size.change(Packing.run);
-    Packing.el.sort.change(Packing.run);
-    Packing.el.color.change(Packing.run);
-    Packing.el.examples.change(Packing.blocks.examples.change);
-    Packing.run();
+    Demo.el.draw = Demo.el.canvas.getContext("2d");
+    Demo.el.blocks.val(Demo.blocks.save(Demo.blocks.examples.current()));
+    Demo.el.blocks.change(Demo.run);
+    Demo.el.size.change(Demo.run);
+    Demo.el.sort.change(Demo.run);
+    Demo.el.color.change(Demo.run);
+    Demo.el.examples.change(Demo.blocks.examples.change);
+    Demo.run();
   },
 
   //---------------------------------------------------------------------------
 
   run: function() {
 
-    var blocks = Packing.blocks.load(Packing.el.blocks.val()).expanded;
-    var packer = Packing.packer();
+    var blocks = Demo.blocks.load(Demo.el.blocks.val()).expanded;
+    var packer = Demo.packer();
 
-    Packing.sort.now(blocks);
+    Demo.sort.now(blocks);
 
     packer.fit(blocks);
 
-    Packing.canvas.reset(packer.root.w, packer.root.h);
-    Packing.canvas.blocks(blocks);
-    Packing.canvas.boundary(packer.root);
-    Packing.report(blocks, packer.root.w, packer.root.h);
+    Demo.canvas.reset(packer.root.w, packer.root.h);
+    Demo.canvas.blocks(blocks);
+    Demo.canvas.boundary(packer.root);
+    Demo.report(blocks, packer.root.w, packer.root.h);
   },
 
   //---------------------------------------------------------------------------
 
   packer: function() {
-    var size = Packing.el.size.val();
+    var size = Demo.el.size.val();
     if (size == 'automatic') {
       return new GrowingPacker();
     }
@@ -226,8 +98,8 @@ Packing = {
       else
         nofit.push("" + block.w + "x" + block.h);
     }
-    Packing.el.ratio.text(Math.round(100 * fit / (w * h)));
-    Packing.el.nofit.html("Did not fit (" + nofit.length + ") :<br>" + nofit.join(", ")).toggle(nofit.length > 0);
+    Demo.el.ratio.text(Math.round(100 * fit / (w * h)));
+    Demo.el.nofit.html("Did not fit (" + nofit.length + ") :<br>" + nofit.join(", ")).toggle(nofit.length > 0);
   },
 
   //---------------------------------------------------------------------------
@@ -241,15 +113,15 @@ Packing = {
     max     : function (a,b) { return Math.max(b.w, b.h) - Math.max(a.w, a.h); },
     min     : function (a,b) { return Math.min(b.w, b.h) - Math.min(a.w, a.h); },
 
-    height  : function (a,b) { return Packing.sort.msort(a, b, ['h', 'w']);               },
-    width   : function (a,b) { return Packing.sort.msort(a, b, ['w', 'h']);               },
-    area    : function (a,b) { return Packing.sort.msort(a, b, ['a', 'h', 'w']);          },
-    maxside : function (a,b) { return Packing.sort.msort(a, b, ['max', 'min', 'h', 'w']); },
+    height  : function (a,b) { return Demo.sort.msort(a, b, ['h', 'w']);               },
+    width   : function (a,b) { return Demo.sort.msort(a, b, ['w', 'h']);               },
+    area    : function (a,b) { return Demo.sort.msort(a, b, ['a', 'h', 'w']);          },
+    maxside : function (a,b) { return Demo.sort.msort(a, b, ['max', 'min', 'h', 'w']); },
 
     msort: function(a, b, criteria) { /* sort by multiple criteria */
       var diff, n;
       for (n = 0 ; n < criteria.length ; n++) {
-        diff = Packing.sort[criteria[n]](a,b);
+        diff = Demo.sort[criteria[n]](a,b);
         if (diff != 0)
           return diff;  
       }
@@ -257,9 +129,9 @@ Packing = {
     },
 
     now: function(blocks) {
-      var sort = Packing.el.sort.val();
+      var sort = Demo.el.sort.val();
       if (sort != 'none')
-        blocks.sort(Packing.sort[sort]);
+        blocks.sort(Demo.sort[sort]);
     }
   },
 
@@ -268,18 +140,18 @@ Packing = {
   canvas: {
 
     reset: function(width, height) {
-      Packing.el.canvas.width  = width  + 1; // add 1 because we draw boundaries offset by 0.5 in order to pixel align and get crisp boundaries
-      Packing.el.canvas.height = height + 1; // (ditto)
-      Packing.el.draw.clearRect(0, 0, Packing.el.canvas.width, Packing.el.canvas.height);
+      Demo.el.canvas.width  = width  + 1; // add 1 because we draw boundaries offset by 0.5 in order to pixel align and get crisp boundaries
+      Demo.el.canvas.height = height + 1; // (ditto)
+      Demo.el.draw.clearRect(0, 0, Demo.el.canvas.width, Demo.el.canvas.height);
     },
 
     rect:  function(x, y, w, h, color) {
-      Packing.el.draw.fillStyle = color;
-      Packing.el.draw.fillRect(x + 0.5, y + 0.5, w, h);
+      Demo.el.draw.fillStyle = color;
+      Demo.el.draw.fillRect(x + 0.5, y + 0.5, w, h);
     },
 
     stroke: function(x, y, w, h) {
-      Packing.el.draw.strokeRect(x + 0.5, y + 0.5, w, h);
+      Demo.el.draw.strokeRect(x + 0.5, y + 0.5, w, h);
     },
 
     blocks: function(blocks) {
@@ -287,15 +159,15 @@ Packing = {
       for (n = 0 ; n < blocks.length ; n++) {
         block = blocks[n];
         if (block.fit)
-          Packing.canvas.rect(block.fit.x, block.fit.y, block.w, block.h, Packing.color(n));
+          Demo.canvas.rect(block.fit.x, block.fit.y, block.w, block.h, Demo.color(n));
       }
     },
     
     boundary: function(node) {
       if (node) {
-        Packing.canvas.stroke(node.x, node.y, node.w, node.h);
-        Packing.canvas.boundary(node.down);
-        Packing.canvas.boundary(node.right);
+        Demo.canvas.stroke(node.x, node.y, node.w, node.h);
+        Demo.canvas.boundary(node.down);
+        Demo.canvas.boundary(node.right);
       }
     }
   },
@@ -376,12 +248,12 @@ Packing = {
       ],
 
       current: function() {
-        return Packing.blocks.examples[Packing.el.examples.val()];
+        return Demo.blocks.examples[Demo.el.examples.val()];
       },
 
       change: function() {
-        Packing.el.blocks.val(Packing.blocks.save(Packing.blocks.examples.current()));
-        Packing.run();
+        Demo.el.blocks.val(Demo.blocks.save(Demo.blocks.examples.current()));
+        Demo.run();
       }
     },
 
@@ -415,5 +287,5 @@ Packing = {
 
 }
 
-$(Packing.init);
+$(Demo.init);
 
