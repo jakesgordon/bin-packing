@@ -5,6 +5,9 @@ This project is a javascript experiment to write a binary tree based
 bin packing algorithm that is suitable for generating
 [CSS sprites](https://github.com/jakesgordon/sprite-factory).
 
+ * You can play with the [demo here](http://codeincomplete.com/posts/2011/5/7/bin_packing/example/)
+ * You can find a [description here](http://codeincomplete.com/posts/2011/5/7/bin_packing/)
+
 Demo
 ====
 
@@ -54,7 +57,5 @@ Contact
 
 If you have any ideas, feedback, requests or bug reports, you can reach me at
 [jake@codeincomplete.com](mailto:jake@codeincomplete.com), or via
-my website: [Code inComplete](http://codeincomplete.com/).
-
-
+my website: [Code inComplete](http://codeincomplete.com/posts/2011/5/7/bin_packing/)
 
