@@ -42,6 +42,11 @@ Demo = {
     Demo.el.color.change(Demo.run);
     Demo.el.examples.change(Demo.blocks.examples.change);
     Demo.run();
+
+    Demo.el.blocks.keypress(function(ev) {
+      if (ev.which == 13)
+        Demo.run(); // run on <enter> while entering block information
+    });
   },
 
   //---------------------------------------------------------------------------
